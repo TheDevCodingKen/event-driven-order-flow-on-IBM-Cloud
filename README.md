@@ -44,7 +44,7 @@ Demonstrate knowledge and understanding of key software engineering fundamentals
 2. Install dependencies
 
     ```python
-    pip install confluent-kafka ibm-cos-sdk python-dotenv
+    pip install confluent-kafka ibm-cos-sdk python-dotenv pytest pytest-cov
 
 3. Configure environment variables:
 
@@ -116,5 +116,62 @@ Configured for **at-least-once delivery guarantee** with no message loss:
 - Synchronous processing with manual offset commits after successful COS writes (at-least-once guarantee)
 - End-to-end latency calculation (producer timestamp → consumer timestamp)
 - Graceful shutdown on interrupt
+
+---
+
+## Phase 2 — Observability, Analytics, and Clean Architecture
+
+### Goal
+
+Extend the pipeline with cloud storage integration, in-app metrics, risk scoring, and demonstrate software design best practices—all within IBM Cloud Lite tier limits.
+
+### Outcomes
+
+**1. Cloud Object Storage Integration** ([`cos_writer.py`](cos_writer.py))
+
+- **Hive-style partitioning**: `orders/dt=YYYY-MM-DD/orderId=<id>.json`
+- Enables efficient date-based queries in analytics tools (Spark, Presto, Athena)
+- Batch write convenience function with error isolation
+- Comprehensive error handling and logging
+
+**2. Domain Modeling** ([`models.py`](models.py))
+
+- **Abstract Data Type**: Immutable `Order` dataclass with type safety
+- **Factory Pattern**: `Order.from_raw()` transforms raw JSON to validated domain object
+- **Type Safety**: `RawOrder` TypedDict for JSON schema validation
+- Encapsulated latency calculation logic
+
+**3. Risk Scoring System** ([`risk.py`](risk.py), [`strategy.py`](strategy.py))
+
+**Algorithm**: Top-K tracking using min-heap (O(log k) per update)
+
+- Maintains highest-value orders in streaming fashion
+- Space-efficient: O(k) memory regardless of stream size
+
+**Design Pattern**: Strategy pattern for channel-specific risk scoring
+
+- `WebRiskScorer`: Proportional to order total (0-0.99 scale)
+- `PartnerRiskScorer`: Threshold-based ($2000 cutoff)
+- `MobileRiskScorer`: Fixed baseline risk (0.5)
+- Extensible via registry pattern — add new channels without modifying core code
+
+**4. Functional Programming** ([`transforms.py`](transforms.py))
+
+- Pure functions for data transformation pipelines
+- Composable filter/map operations
+- Lazy evaluation with Python iterators
+
+**5. Observability Metrics** ([`metrics.py`](metrics.py), [`consumer.py`](consumer.py))
+
+- **End-to-end latency**: Producer timestamp → Consumer timestamp (milliseconds)
+- **Throughput monitoring**: Sliding 30-second window (events/second)
+- **Risk scoring**: Per-order risk assessment logged in real-time
+- All metrics computed in-app (no external APM required for Lite tier)
+
+**6. Test Coverage** ([`tests/`](tests/))
+
+- Unit tests for COS writer with mocked IBM SDK
+- Unit tests for risk algorithms (TopK heap, predicates)
+- Pytest fixtures for environment isolation
 
 ---
