@@ -175,3 +175,186 @@ Extend the pipeline with cloud storage integration, in-app metrics, risk scoring
 - Pytest fixtures for environment isolation
 
 ---
+
+## Architecture
+
+### Phase 1: Secure Event-Driven Foundation
+
+![Phase 1 Architecture](./diagrams/Phase%201%20—%20Secure%20Event-Driven%20Foundation.png)
+
+**Key Components:**
+
+- Producer with at-least-once delivery guarantees (acks=all, retries=3)
+- IBM Event Streams (Kafka) with SASL_SSL authentication
+- Consumer with manual offset commits after successful COS writes
+- IBM Cloud Object Storage with Hive-style partitioning
+
+**Delivery Guarantee:** At-least-once from producer to storage. Offsets committed only after successful COS write, ensuring no message loss even on consumer failure.
+
+---
+
+### Phase 2: Observability, Analytics, and Clean Architecture
+
+![Phase 2 Architecture](./diagrams/Phase%202%20—%20Observability,%20Analytics,%20and%20Clean%20Architecture.png)
+
+**Design Patterns:**
+
+- **Factory Pattern**: `Order.from_raw()` transforms raw JSON to validated domain objects
+- **Strategy Pattern**: Pluggable risk scoring algorithms (Web, Partner, Mobile)
+- **Registry Pattern**: Runtime extensibility for new channels without code modification
+- **Immutable ADT**: Type-safe, frozen dataclasses prevent bugs
+
+**Key Enhancements:**
+
+- Domain modeling with type safety (RawOrder TypedDict → Order dataclass)
+- Risk scoring with O(log k) TopK heap algorithm
+- In-app observability (latency tracking, throughput monitoring)
+- Functional data transformation pipelines
+
+---
+
+### End-to-End Data Flow
+
+![End-to-End Flow](./diagrams/Phase%203%20—%20End-to-End%20Data%20Flow%20with%20Guarantees.png)
+
+**Data Transformations:**
+
+1. **Producer**: Python dict → JSON bytes (UTF-8, Snappy compressed)
+2. **Kafka**: Durable storage with replication
+3. **Consumer**: JSON bytes → RawOrder (TypedDict)
+4. **Domain Layer**: RawOrder → Order (immutable dataclass)
+5. **Enrichment**: Add consumed_at, latency_ms, risk_score
+6. **Storage**: Enriched JSON → COS with Hive partitioning
+
+**Failure Handling:** COS write failures prevent offset commits, triggering message reprocessing. Idempotent writes (same key) ensure safe retries.
+
+---
+
+## Scaling Plan
+
+**Current (IBM Cloud Lite)**
+
+- Single partition, single consumer
+- Ideal for PoC and development
+- No cost, sufficient for learning and validation
+
+**Production Recommendations (IBM Subscription)**
+
+- **Increase partitions**: Enable parallel processing (1 consumer per partition)
+- **Consumer groups**: Add multiple consumers for horizontal scaling
+- **Monitoring**: Integrate IBM Cloud Monitoring or Instana for production observability
+- **Durability**: Upgrade to Standard/Enterprise for 3x replication (service-managed)
+- **Retention**: Configure topic retention based on compliance requirements
+
+## Project Structure
+
+```python
+
+├── producer.py             # Kafka producer with delivery guarantees
+├── consumer.py             # Kafka consumer with metrics and COS sink
+├── kafka_settings.py       # Shared Kafka configuration
+├── cos_writer.py           # IBM COS integration with Hive partitioning
+├── models.py               # Domain models (Order, RawOrder)
+├── strategy.py             # Risk scoring strategies (Strategy pattern)
+├── risk.py                 # Risk algorithms (TopK heap, predicates)
+├── metrics.py              # Throughput monitoring (sliding window)
+├── transforms.py           # Functional data transformations
+├── check_connection.py     # Kafka connectivity validator
+├── tests/
+│   ├── test_cos_writer.py  # COS writer unit tests
+│   └── test_risk.py        # Risk algorithm unit tests
+├── diagrams/
+    ├── Phase 1 — Secure Event-Driven Foundation 
+    ├── Phase 2 — Observability, Analytics, and Clean Architecture  
+│   └── Phase 3 — End-to-End Data Flow with Guarantees   
+└── README.md
+```
+
+---
+
+## Key Learnings
+
+1. **At-least-once delivery** requires producer acknowledgments (`acks=all`) and manual consumer offset commits AFTER processing completes
+2. **Hive-style partitioning** enables efficient analytics queries on object storage
+3. **Strategy pattern** provides extensibility without modifying existing code
+4. **Immutable domain models** prevent bugs and enable safe concurrent processing
+5. **In-app metrics** are sufficient for PoC observability without external APM costs
+
+---
+
+---
+
+## Project Evolution
+
+This project was developed iteratively to demonstrate incremental software development practices:
+
+### [Phase 1: Secure Event-Driven Foundation](../../tree/v1.0.0-phase1) (`v1.0.0-phase1`)
+
+**Focus:** Minimal viable pipeline with delivery guarantees
+
+**Implemented:**
+
+- Producer with at-least-once delivery to Kafka (`acks=all`, `retries=3`)
+- Consumer with basic Kafka integration
+- SASL_SSL authentication with IBM Event Streams
+- COS integration with Hive-style partitioning
+- End-to-end latency tracking
+
+**Key Files:** [`producer.py`](producer.py), [`consumer.py`](consumer.py), [`kafka_settings.py`](kafka_settings.py), [`cos_writer.py`](cos_writer.py)
+
+---
+
+### [Phase 2: Observability and Clean Architecture](../../tree/v2.0.0-phase2) (`v2.0.0-phase2`)
+
+**Focus:** Design patterns, type safety, and enhanced observability
+
+**Added:**
+
+- Domain modeling with immutable dataclasses ([`models.py`](models.py))
+- Risk scoring with Strategy + Registry patterns ([`strategy.py`](strategy.py), [`risk.py`](risk.py))
+- TopK heap algorithm for high-value order tracking
+- Throughput monitoring with sliding window ([`metrics.py`](metrics.py))
+- Functional data transformation pipelines ([`transforms.py`](transforms.py))
+- Unit test coverage ([`tests/`](tests/))
+- Manual offset commits for true at-least-once guarantee
+
+**Design Patterns:** Factory, Strategy, Registry, Immutable ADT
+
+---
+
+### Current State (`v2.1.0`)
+
+**Added:**
+
+- Architecture diagrams for all phases
+- Enhanced documentation with visual representations
+- Verified at-least-once guarantee implementation
+
+**Status:** Production-ready PoC on IBM Cloud Lite tier
+
+---
+
+### Exploring Phase History
+
+**View specific phases:**
+
+```bash
+# Checkout Phase 1 to see initial implementation
+git checkout v1.0.0-phase1
+
+# Checkout Phase 2 to see design pattern additions
+git checkout v2.0.0-phase2
+
+# Return to latest version
+git checkout main
+
+---
+
+## External Artifacts
+
+- IBM Design Thinking Hills (WHO-WHAT-WOW format)
+- Playback validation results (≤ 2 min processing time)
+- Sequence diagrams (event flow visualization)
+- Instana Sandbox observability walkthrough (if applicable)
+
+*Note: These artifacts are maintained separately and available upon request.*
