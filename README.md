@@ -326,7 +326,7 @@ This project was developed iteratively to demonstrate incremental software devel
 
 ---
 
-### Current State (`v2.1.0`)
+### Release (`v2.1.0`)
 
 **Added:**
 
@@ -335,6 +335,16 @@ This project was developed iteratively to demonstrate incremental software devel
 - Verified at-least-once guarantee implementation
 
 **Status:** Production-ready PoC on IBM Cloud Lite tier
+
+### Current State (`v2.2.0`)
+
+**Added:**
+
+- Class diagram for domain models and design patterns
+- Complete visual documentation suite (4 diagrams)
+- Enhanced Architecture section with code structure visualization
+
+**Status:** Production-ready PoC on IBM Cloud Lite tier with comprehensive documentation
 
 ---
 
