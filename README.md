@@ -213,6 +213,10 @@ Extend the pipeline with cloud storage integration, in-app metrics, risk scoring
 
 ---
 
+### Class Diagram: Domain Models and Risk Scoring
+
+![Class Diagram](./diagrams/Class%20Diagram.png)
+
 ### End-to-End Data Flow
 
 ![End-to-End Flow](./diagrams/Phase%203%20—%20End-to-End%20Data%20Flow%20with%20Guarantees.png)
