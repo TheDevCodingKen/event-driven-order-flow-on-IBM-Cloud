@@ -270,6 +270,7 @@ Extend the pipeline with cloud storage integration, in-app metrics, risk scoring
 ├── diagrams/
     ├── Phase 1 — Secure Event-Driven Foundation 
     ├── Phase 2 — Observability, Analytics, and Clean Architecture  
+    ├── Class Diagram: Domain Models and Risk Scoring
 │   └── Phase 3 — End-to-End Data Flow with Guarantees   
 └── README.md
 ```
@@ -334,8 +335,6 @@ This project was developed iteratively to demonstrate incremental software devel
 - Enhanced documentation with visual representations
 - Verified at-least-once guarantee implementation
 
-**Status:** Production-ready PoC on IBM Cloud Lite tier
-
 ### Current State (`v2.2.0`)
 
 **Added:**
@@ -368,7 +367,5 @@ git checkout main
 
 - IBM Design Thinking Hills (WHO-WHAT-WOW format)
 - Playback validation results (≤ 2 min processing time)
-- Sequence diagrams (event flow visualization)
-- Instana Sandbox observability walkthrough (if applicable)
 
 *Note: These artifacts are maintained separately and available upon request.*
