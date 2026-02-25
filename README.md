@@ -72,11 +72,11 @@ Demonstrate knowledge and understanding of key software engineering fundamentals
 6. Run the pipeline
 
     ```python
-    # Terminal 1: Start consumer
-    python consumer.py
-
-    # Terminal 2: Send orders
+    # Terminal 1: Send orders
     python producer.py
+
+    # Terminal 2: Start consumer
+    python consumer.py
 
 ---
 
