@@ -268,9 +268,9 @@ Extend the pipeline with cloud storage integration, in-app metrics, risk scoring
 │   ├── test_cos_writer.py  # COS writer unit tests
 │   └── test_risk.py        # Risk algorithm unit tests
 ├── diagrams/
-    ├── Phase 1 — Secure Event-Driven Foundation 
-    ├── Phase 2 — Observability, Analytics, and Clean Architecture  
-    ├── Class Diagram: Domain Models and Risk Scoring
+│   ├── Phase 1 — Secure Event-Driven Foundation 
+│   ├── Phase 2 — Observability, Analytics, and Clean Architecture  
+│   ├── Class Diagram: Domain Models and Risk Scoring
 │   └── Phase 3 — End-to-End Data Flow with Guarantees   
 └── README.md
 ```
